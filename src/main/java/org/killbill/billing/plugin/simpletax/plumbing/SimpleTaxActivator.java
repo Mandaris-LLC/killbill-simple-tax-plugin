@@ -66,7 +66,7 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // Note: super.start() creates the configHandler that we later use in
         // createDefaultConfig() below
         super.start(context);
-
+        configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI, logService);
         createDefaultConfig();
         CustomFieldService customFieldService = createCustomFieldService();
 
@@ -76,7 +76,6 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         HttpServlet servlet = createServlet(customFieldService, invoiceService);
         register(Servlet.class, servlet, context);
 
-        configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI, logService);
         final PluginConfigurationEventHandler eventHandler = new PluginConfigurationEventHandler(configHandler);
 
         dispatcher.registerEventHandlers(eventHandler);
