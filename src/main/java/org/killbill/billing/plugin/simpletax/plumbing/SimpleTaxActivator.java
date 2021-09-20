@@ -72,13 +72,14 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
 
         final SimpleTaxPlugin plugin = createPlugin(customFieldService);
         register(InvoicePluginApi.class, plugin, context);
+        InvoiceService invoiceService = createInvoiceService();
+        HttpServlet servlet = createServlet(customFieldService, invoiceService);
+        register(Servlet.class, servlet, context);
+
         configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI, logService);
         final PluginConfigurationEventHandler eventHandler = new PluginConfigurationEventHandler(configHandler);
 
         dispatcher.registerEventHandlers(eventHandler);
-        InvoiceService invoiceService = createInvoiceService();
-        HttpServlet servlet = createServlet(customFieldService, invoiceService);
-        register(Servlet.class, servlet, context);
     }
 
     /**
