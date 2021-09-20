@@ -19,10 +19,10 @@ package org.killbill.billing.plugin.simpletax.plumbing;
 import java.util.Map;
 import java.util.Properties;
 
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.plugin.api.notification.PluginTenantConfigurableConfigurationHandler;
 import org.killbill.billing.plugin.simpletax.config.SimpleTaxConfig;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillAPI;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
 
 import com.google.common.collect.Maps;
 
@@ -39,15 +39,16 @@ public class SimpleTaxConfigurationHandler extends PluginTenantConfigurableConfi
      * Constructs a new configuration handler.
      *
      * @param pluginName
-     *            The plugin name to use when accessing per-tenant
-     *            configuration.
+     *                       The plugin name to use when accessing per-tenant
+     *                       configuration.
      * @param services
-     *            The Kill Bill meta-API.
+     *                       The Kill Bill meta-API.
      * @param logService
-     *            The service to use when logging events.
+     *                       The service to use when logging events.
      */
-    public SimpleTaxConfigurationHandler(String pluginName, OSGIKillbillAPI services, OSGIKillbillLogService logService) {
-        super(pluginName, services, logService);
+    public SimpleTaxConfigurationHandler(String pluginName, OSGIKillbillAPI services,
+            OSGIKillbillLogService logService) {
+        super(pluginName, services);
         this.logService = logService;
     }
 

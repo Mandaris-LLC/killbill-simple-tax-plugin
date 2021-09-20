@@ -45,8 +45,8 @@ import com.google.common.collect.SetMultimap;
 public class TaxCodeService {
 
     /**
-     * The name of a custom field on invoice items, that can specify any
-     * relevant tax code to apply.
+     * The name of a custom field on invoice items, that can specify any relevant
+     * tax code to apply.
      */
     public static final String TAX_CODES_FIELD_NAME = "taxCodes";
 
@@ -58,12 +58,12 @@ public class TaxCodeService {
      * Creates a service that helps listing tax codes.
      *
      * @param catalog
-     *            The Kill Bill catalog to use.
+     *                                The Kill Bill catalog to use.
      * @param cfg
-     *            The plugin configuration.
+     *                                The plugin configuration.
      * @param taxFieldsOfInvoices
-     *            The tax fields of all account invoices, grouped by their
-     *            related taxable items.
+     *                                The tax fields of all account invoices,
+     *                                grouped by their related taxable items.
      */
     public TaxCodeService(CheckedSupplier<StaticCatalog, CatalogApiException> catalog, SimpleTaxConfig cfg,
             SetMultimap<UUID, CustomField> taxFieldsOfInvoices) {
@@ -74,19 +74,19 @@ public class TaxCodeService {
     }
 
     /**
-     * Enumerate configured tax codes for the items of a given invoice. The
-     * order of configured tax codes is preserved.
+     * Enumerate configured tax codes for the items of a given invoice. The order of
+     * configured tax codes is preserved.
      * <p>
-     * Final resolution is not done here because it represents custom logic that
-     * is regulation-dependent.
+     * Final resolution is not done here because it represents custom logic that is
+     * regulation-dependent.
      *
      * @param invoice
-     *            the invoice the items of which need to be taxed.
-     * @return An immutable multi-map of unique applicable tax codes, grouped by
-     *         the identifiers of their related invoice items. Never
-     *         {@code null}, and guaranteed not having any {@code null} values.
+     *                    the invoice the items of which need to be taxed.
+     * @return An immutable multi-map of unique applicable tax codes, grouped by the
+     *         identifiers of their related invoice items. Never {@code null}, and
+     *         guaranteed not having any {@code null} values.
      * @throws NullPointerException
-     *             when {@code invoice} is {@code null}.
+     *                                  when {@code invoice} is {@code null}.
      */
     @Nonnull
     public SetMultimap<UUID, TaxCode> resolveTaxCodesFromConfig(Invoice invoice) {
@@ -99,7 +99,7 @@ public class TaxCodeService {
                     @Override
                     public Product transform(String planName) {
                         try {
-                            Plan plan = catalog.get().findCurrentPlan(planName);
+                            Plan plan = catalog.get().findPlan(planName);
                             return plan.getProduct();
                         } catch (CatalogApiException notFound) {
                             return null;
@@ -128,17 +128,17 @@ public class TaxCodeService {
     }
 
     /**
-     * Find tax codes that apply to the items of a given invoice, looking for
-     * custom fields named {@value #TAX_CODES_FIELD_NAME} that can be attached
-     * to these items.
+     * Find tax codes that apply to the items of a given invoice, looking for custom
+     * fields named {@value #TAX_CODES_FIELD_NAME} that can be attached to these
+     * items.
      *
      * @param invoice
-     *            An invoice in which existing tax codes are to be found.
-     * @return The existing tax codes, grouped by the identifiers of their
-     *         related invoice items. Never {@code null}, and guaranteed not
-     *         having any {@code null} values.
+     *                    An invoice in which existing tax codes are to be found.
+     * @return The existing tax codes, grouped by the identifiers of their related
+     *         invoice items. Never {@code null}, and guaranteed not having any
+     *         {@code null} values.
      * @throws NullPointerException
-     *             when {@code invoice} is {@code null}.
+     *                                  when {@code invoice} is {@code null}.
      */
     @Nonnull
     public SetMultimap<UUID, TaxCode> findExistingTaxCodes(Invoice invoice) {
@@ -155,8 +155,8 @@ public class TaxCodeService {
                 continue;
             }
             UUID invoiceItemId = taxField.getObjectId();
-            Set<TaxCode> taxCodes = cfg.findTaxCodes(taxCodesCSV, "from custom field '" + TAX_CODES_FIELD_NAME
-                    + "' of invoice item [" + invoiceItemId + "]");
+            Set<TaxCode> taxCodes = cfg.findTaxCodes(taxCodesCSV,
+                    "from custom field '" + TAX_CODES_FIELD_NAME + "' of invoice item [" + invoiceItemId + "]");
             taxCodesOfInvoiceItems.putAll(invoiceItemId, taxCodes);
         }
         return taxCodesOfInvoiceItems.build();

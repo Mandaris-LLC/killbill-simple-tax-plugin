@@ -35,7 +35,7 @@ import org.killbill.billing.plugin.simpletax.internal.TaxCodeService;
 import org.killbill.billing.tenant.api.Tenant;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.customfield.CustomField;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,11 +51,12 @@ public class TaxCodeController {
 
     /**
      * @param customFieldService
-     *            The service to use when accessing custom fields.
+     *                               The service to use when accessing custom
+     *                               fields.
      * @param invoiceService
-     *            The service to use when accessing invoices.
+     *                               The service to use when accessing invoices.
      * @param logService
-     *            The Kill Bill log service to use.
+     *                               The Kill Bill log service to use.
      */
     public TaxCodeController(CustomFieldService customFieldService, InvoiceService invoiceService,
             OSGIKillbillLogService logService) {
@@ -65,8 +66,8 @@ public class TaxCodeController {
         this.invoiceService = invoiceService;
     }
 
-    public List<TaxCodesGETRsc> listInvoiceTaxCodes(@Nonnull UUID invoiceId, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+    public List<TaxCodesGETRsc> listInvoiceTaxCodes(@Nonnull UUID invoiceId, @Nonnull UUID accountId, Tenant tenant) {
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
         List<InvoiceItem> items = invoiceService.findAllInvoiceItemsByInvoice(invoiceId, tenantContext);
 
@@ -81,8 +82,9 @@ public class TaxCodeController {
         return taxCodes;
     }
 
-    public boolean saveInvoiceTaxCodes(@Nonnull UUID invoiceId, TaxCodesPOSTRsc taxCodes, Tenant tenant) {
-        return saveTaxCodesOfInvoiceItem(taxCodes.invoiceItemId, taxCodes, tenant);
+    public boolean saveInvoiceTaxCodes(@Nonnull UUID invoiceId, TaxCodesPOSTRsc taxCodes, @Nonnull UUID accountId,
+            Tenant tenant) {
+        return saveTaxCodesOfInvoiceItem(taxCodes.invoiceItemId, taxCodes, accountId, tenant);
     }
 
     private static String joinTaxCodes(Set<TaxCodeRsc> taxCodes) {
@@ -96,8 +98,9 @@ public class TaxCodeController {
         return names.toString();
     }
 
-    public TaxCodesGETRsc getTaxCodesOfInvoiceItem(@Nonnull UUID invoiceItemId, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+    public TaxCodesGETRsc getTaxCodesOfInvoiceItem(@Nonnull UUID invoiceItemId, @Nonnull UUID accountId,
+            Tenant tenant) {
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
         Invoice invoice = invoiceService.findInvoiceByInvoiceItem(invoiceItemId, tenantContext);
         if (invoice == null) {
@@ -111,13 +114,13 @@ public class TaxCodeController {
 
     /**
      * @param invoiceId
-     *            Not {@code null}.
+     *                          Not {@code null}.
      * @param invoiceItemId
-     *            Not {@code null}.
+     *                          Not {@code null}.
      * @param tenantContext
-     *            Not {@code null}
-     * @return A resource. Or {@code null} if no tax codes are set on the
-     *         specified invoice item.
+     *                          Not {@code null}
+     * @return A resource. Or {@code null} if no tax codes are set on the specified
+     *         invoice item.
      */
     private TaxCodesGETRsc fetchTaxCodesOfInvoiceItem(@Nonnull UUID invoiceId, @Nonnull UUID invoiceItemId,
             TenantContext tenantContext) {
@@ -131,8 +134,9 @@ public class TaxCodeController {
         return toTaxCodesGETRscOrNull(invoiceId, field.getObjectId(), field.getFieldValue());
     }
 
-    public boolean saveTaxCodesOfInvoiceItem(@Nonnull UUID invoiceItemId, TaxCodesPUTRsc taxCodes, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+    public boolean saveTaxCodesOfInvoiceItem(@Nonnull UUID invoiceItemId, TaxCodesPUTRsc taxCodes,
+            @Nonnull UUID accountId, Tenant tenant) {
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
         return customFieldService.saveInvoiceItemField(joinTaxCodes(taxCodes.taxCodes), TAX_CODES_FIELD_NAME,
                 invoiceItemId, tenantContext);
     }
@@ -150,8 +154,8 @@ public class TaxCodeController {
     }
 
     /**
-     * A resource for saving tax codes on a specific invoice item that is
-     * externally specified (i.e. in the path info).
+     * A resource for saving tax codes on a specific invoice item that is externally
+     * specified (i.e. in the path info).
      *
      * @author Benjamin Gandon
      */
@@ -166,8 +170,8 @@ public class TaxCodeController {
     }
 
     /**
-     * A resource for saving tax codes on an invoice item of a specific invoice
-     * that is externally specified (i.e. in the path info).
+     * A resource for saving tax codes on an invoice item of a specific invoice that
+     * is externally specified (i.e. in the path info).
      *
      * @author Benjamin Gandon
      */
@@ -186,8 +190,8 @@ public class TaxCodeController {
     /**
      * A resource for describing tax codes an invoice item.
      * <p>
-     * This resource is meant to be serialized and transmitted to the client,
-     * but not meant to be deserialized from the client.
+     * This resource is meant to be serialized and transmitted to the client, but
+     * not meant to be deserialized from the client.
      *
      * @author Benjamin Gandon
      */
@@ -196,16 +200,16 @@ public class TaxCodeController {
 
         /**
          * @param invoiceItemId
-         *            An
-         *            {@linkplain org.killbill.billing.invoice.api.InvoiceItem
-         *            invoice item identifier}.
+         *                          An
+         *                          {@linkplain org.killbill.billing.invoice.api.InvoiceItem
+         *                          invoice item identifier}.
          * @param invoiceId
-         *            An
-         *            {@linkplain org.killbill.billing.invoice.api.Invoice#getId()
-         *            invoice identifier}.
+         *                          An
+         *                          {@linkplain org.killbill.billing.invoice.api.Invoice#getId()
+         *                          invoice identifier}.
          * @param taxCodes
-         *            A set of tax codes, in which the order of elements is
-         *            significant.
+         *                          A set of tax codes, in which the order of elements
+         *                          is significant.
          */
         public TaxCodesGETRsc(UUID invoiceItemId, UUID invoiceId, Set<TaxCodeRsc> taxCodes) {
             super(invoiceItemId, taxCodes);

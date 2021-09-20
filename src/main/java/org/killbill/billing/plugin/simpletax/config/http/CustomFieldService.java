@@ -42,7 +42,7 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.customfield.CustomField;
 import org.killbill.billing.util.entity.Pagination;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -68,9 +68,9 @@ public class CustomFieldService {
      * Constructs a service for manipulating custom fields.
      *
      * @param customFieldApi
-     *            The Kill Bill service API class to use.
+     *                           The Kill Bill service API class to use.
      * @param logService
-     *            The Kill Bill logging service to use.
+     *                           The Kill Bill logging service to use.
      */
     public CustomFieldService(CustomFieldUserApi customFieldApi, OSGIKillbillLogService logService) {
         super();
@@ -98,8 +98,7 @@ public class CustomFieldService {
 
     /**
      * A predicate that only accepts custom fields of a given
-     * {@linkplain org.killbill.billing.ObjectType object type} and a specific
-     * name.
+     * {@linkplain org.killbill.billing.ObjectType object type} and a specific name.
      */
     private static class RetainFieldsWithNameAndObjectType extends RetainFieldsWithName {
         private ObjectType objectType;
@@ -117,13 +116,14 @@ public class CustomFieldService {
     }
 
     /**
-     * Finds all custom fields on account objects that match a specific field
-     * name in the context of a given tenant.
+     * Finds all custom fields on account objects that match a specific field name
+     * in the context of a given tenant.
      *
      * @param fieldName
-     *            A specific field name that returned fields will match.
+     *                          A specific field name that returned fields will
+     *                          match.
      * @param tenantContext
-     *            The tenant on which to operate.
+     *                          The tenant on which to operate.
      * @return The list of matching custom fields. Never {@code null}.
      */
     @Nonnull
@@ -153,20 +153,22 @@ public class CustomFieldService {
     }
 
     /**
-     * Finds a custom field on a given account object that matches a specific
-     * field name in the context of a given tenant.
+     * Finds a custom field on a given account object that matches a specific field
+     * name in the context of a given tenant.
      *
      * @param fieldName
-     *            A specific field name that any returned field will match.
+     *                          A specific field name that any returned field will
+     *                          match.
      * @param accountId
-     *            An identifier for an account.
+     *                          An identifier for an account.
      * @param tenantContext
-     *            The tenant on which to operate.
-     * @return The matching custom field if any, or {@code null} if no such
-     *         field exists.
+     *                          The tenant on which to operate.
+     * @return The matching custom field if any, or {@code null} if no such field
+     *         exists.
      */
     @Nullable
-    public CustomField findFieldByNameAndAccountAndTenant(String fieldName, UUID accountId, TenantContext tenantContext) {
+    public CustomField findFieldByNameAndAccountAndTenant(String fieldName, UUID accountId,
+            TenantContext tenantContext) {
         List<CustomField> accountFields = customFieldApi.getCustomFieldsForObject(accountId, ACCOUNT, tenantContext);
         if (accountFields == null) {
             return null;
@@ -178,15 +180,15 @@ public class CustomFieldService {
      * Persists a new value for a custom field on a given account object.
      *
      * @param fieldValue
-     *            The new field value.
+     *                          The new field value.
      * @param fieldName
-     *            The field name.
+     *                          The field name.
      * @param accountId
-     *            The identifier for the account object.
+     *                          The identifier for the account object.
      * @param tenantContext
-     *            The tenant on which to operate.
-     * @return {@code true} when the new value is properly saved, or
-     *         {@code false} otherwise.
+     *                          The tenant on which to operate.
+     * @return {@code true} when the new value is properly saved, or {@code false}
+     *         otherwise.
      */
     public boolean saveAccountField(String fieldValue, String fieldName, UUID accountId, TenantContext tenantContext) {
         return saveAccountField(fieldValue, fieldName, accountId, ACCOUNT, tenantContext);
@@ -209,16 +211,17 @@ public class CustomFieldService {
                 }
             }
         }
-        CallContext context = new PluginCallContext(PLUGIN_NAME, new DateTime(), tenantContext.getTenantId());
+        CallContext context = new PluginCallContext(PLUGIN_NAME, new DateTime(), tenantContext.getAccountId(),
+                tenantContext.getTenantId());
         if (existing != null) {
             try {
                 customFieldApi.removeCustomFields(ImmutableList.of(existing), context);
             } catch (CustomFieldApiException exc) {
-                logService.log(
-                        LOG_ERROR,
+                logService.log(LOG_ERROR,
                         "while removing custom field '" + existing.getFieldName() + "' with value ["
                                 + existing.getFieldValue() + "] on " + existing.getObjectType() + " object ["
-                                + existing.getObjectId() + "]", exc);
+                                + existing.getObjectId() + "]",
+                        exc);
                 return false;
             }
         }
@@ -239,7 +242,8 @@ public class CustomFieldService {
                 logService.log(LOG_ERROR,
                         "while adding back the previously removed custom field '" + existing.getFieldName()
                                 + "' with value [" + existing.getFieldValue() + "] on " + existing.getObjectType()
-                                + " object [" + existing.getObjectId() + "]", exc);
+                                + " object [" + existing.getObjectId() + "]",
+                        exc);
             }
             return false;
         }

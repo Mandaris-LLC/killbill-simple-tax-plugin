@@ -104,8 +104,8 @@ public class SimpleTaxServlet extends PluginServlet {
     private static final String INVOICES_PATH = "/invoices";
     private static final Pattern INVOICE_PATTERN = compile(INVOICES_PATH + "/(" + UUID_LOOSE_PATTERN + ")/(\\w+)");
     private static final String INVOICE_ITEMS_PATH = "/invoiceItems";
-    private static final Pattern INVOICE_ITEM_PATTERN = compile(INVOICE_ITEMS_PATH + "/(" + UUID_LOOSE_PATTERN
-            + ")/(\\w+)");
+    private static final Pattern INVOICE_ITEM_PATTERN = compile(
+            INVOICE_ITEMS_PATH + "/(" + UUID_LOOSE_PATTERN + ")/(\\w+)");
     private static final String TAX_CODES_RESOURCE_NAME = "taxCodes";
 
     private static String accountResourceUri(UUID accountId, String resourceName) {
@@ -136,11 +136,11 @@ public class SimpleTaxServlet extends PluginServlet {
      * plugin.
      *
      * @param vatinController
-     *            The VATIN controller to use.
+     *                                 The VATIN controller to use.
      * @param taxCountryController
-     *            The tax country controller to use.
+     *                                 The tax country controller to use.
      * @param taxCodeController
-     *            The tax code controller to use.
+     *                                 The tax code controller to use.
      */
     public SimpleTaxServlet(VatinController vatinController, TaxCountryController taxCountryController,
             TaxCodeController taxCodeController) {
@@ -165,8 +165,8 @@ public class SimpleTaxServlet extends PluginServlet {
      * GET /invoices/{invoiceId:\w+-\w+-\w+-\w+-\w+}/taxCodes
      * </pre>
      *
-     * Other endpoints could be provided in the future, when the Kill Bill API
-     * make them reasonable to provide:
+     * Other endpoints could be provided in the future, when the Kill Bill API make
+     * them reasonable to provide:
      *
      * <pre>
      * GET /invoiceItems/{invoiceItemId:\w+-\w+-\w+-\w+-\w+}/taxCodes
@@ -176,8 +176,8 @@ public class SimpleTaxServlet extends PluginServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Tenant tenant = getTenant(req);
         if (tenant == null) {
-            buildNotFoundResponse("No tenant specified by the 'X-Killbill-ApiKey'"
-                    + " and 'X-Killbill-ApiSecret' headers", resp);
+            buildNotFoundResponse(
+                    "No tenant specified by the 'X-Killbill-ApiKey'" + " and 'X-Killbill-ApiSecret' headers", resp);
             return;
         }
         String pathInfo = req.getPathInfo();
@@ -215,8 +215,8 @@ public class SimpleTaxServlet extends PluginServlet {
                 accountId = toUUIDOrNull(account);
             }
             if (accountId == null) {
-                resp.sendError(SC_BAD_REQUEST, "Illegal value [" + account + "] for request parameter ["
-                        + ACCOUNT_PARAM_NAME + "]");
+                resp.sendError(SC_BAD_REQUEST,
+                        "Illegal value [" + account + "] for request parameter [" + ACCOUNT_PARAM_NAME + "]");
                 return;
             }
             Object value = taxCountryController.listTaxCountries(accountId, tenant);
@@ -235,8 +235,8 @@ public class SimpleTaxServlet extends PluginServlet {
                 accountId = toUUIDOrNull(account);
             }
             if (accountId == null) {
-                resp.sendError(SC_BAD_REQUEST, "Illegal value [" + account + "] for request parameter ["
-                        + ACCOUNT_PARAM_NAME + "]");
+                resp.sendError(SC_BAD_REQUEST,
+                        "Illegal value [" + account + "] for request parameter [" + ACCOUNT_PARAM_NAME + "]");
                 return;
             }
             Object value = vatinController.listVatins(accountId, tenant);
@@ -251,12 +251,22 @@ public class SimpleTaxServlet extends PluginServlet {
                 buildNotFoundResponse("Resource " + pathInfo + " not found", resp);
                 return;
             }
+            String account = req.getParameter(ACCOUNT_PARAM_NAME);
+            UUID accountId = null;
+            if (LOOSE_UUID.matcher(account).matches()) {
+                accountId = toUUIDOrNull(account);
+            }
+            if (accountId == null) {
+                resp.sendError(SC_BAD_REQUEST,
+                        "Illegal value [" + account + "] for request parameter [" + ACCOUNT_PARAM_NAME + "]");
+                return;
+            }
             String resourceName = matcher.group(RESOURCE_NAME_GROUP);
             if (!TAX_CODES_RESOURCE_NAME.equals(resourceName)) {
                 buildNotFoundResponse("Resource " + pathInfo + " not found", resp);
                 return;
             }
-            Object value = taxCodeController.listInvoiceTaxCodes(invoiceId, tenant);
+            Object value = taxCodeController.listInvoiceTaxCodes(invoiceId, accountId, tenant);
             writeJsonOkResponse(value, resp);
             return;
         }
@@ -268,12 +278,22 @@ public class SimpleTaxServlet extends PluginServlet {
                 buildNotFoundResponse("Resource " + pathInfo + " not found", resp);
                 return;
             }
+            String account = req.getParameter(ACCOUNT_PARAM_NAME);
+            UUID accountId = null;
+            if (LOOSE_UUID.matcher(account).matches()) {
+                accountId = toUUIDOrNull(account);
+            }
+            if (accountId == null) {
+                resp.sendError(SC_BAD_REQUEST,
+                        "Illegal value [" + account + "] for request parameter [" + ACCOUNT_PARAM_NAME + "]");
+                return;
+            }
             String resourceName = matcher.group(RESOURCE_NAME_GROUP);
             if (!TAX_CODES_RESOURCE_NAME.equals(resourceName)) {
                 buildNotFoundResponse("Resource " + pathInfo + " not found", resp);
                 return;
             }
-            Object value = taxCodeController.getTaxCodesOfInvoiceItem(invoiceItemId, tenant);
+            Object value = taxCodeController.getTaxCodesOfInvoiceItem(invoiceItemId, accountId, tenant);
             writeJsonOkResponse(value, resp);
         }
 
@@ -291,8 +311,8 @@ public class SimpleTaxServlet extends PluginServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Tenant tenant = getTenant(req);
         if (tenant == null) {
-            buildNotFoundResponse("No tenant specified by the 'X-Killbill-ApiKey'"
-                    + " and 'X-Killbill-ApiSecret' headers", resp);
+            buildNotFoundResponse(
+                    "No tenant specified by the 'X-Killbill-ApiKey'" + " and 'X-Killbill-ApiSecret' headers", resp);
             return;
         }
         String pathInfo = req.getPathInfo();
@@ -319,7 +339,17 @@ public class SimpleTaxServlet extends PluginServlet {
                 resp.sendError(SC_BAD_REQUEST, "Invalid Tax Codes resource in request body");
                 return;
             }
-            boolean saved = taxCodeController.saveInvoiceTaxCodes(invoiceId, taxCodesRsc, tenant);
+            String account = req.getParameter(ACCOUNT_PARAM_NAME);
+            UUID accountId = null;
+            if (LOOSE_UUID.matcher(account).matches()) {
+                accountId = toUUIDOrNull(account);
+            }
+            if (accountId == null) {
+                resp.sendError(SC_BAD_REQUEST,
+                        "Illegal value [" + account + "] for request parameter [" + ACCOUNT_PARAM_NAME + "]");
+                return;
+            }
+            boolean saved = taxCodeController.saveInvoiceTaxCodes(invoiceId, taxCodesRsc, accountId, tenant);
             if (!saved) {
                 resp.sendError(SC_INTERNAL_SERVER_ERROR, "Could not save Tax Codes resource");
                 return;
@@ -346,8 +376,8 @@ public class SimpleTaxServlet extends PluginServlet {
     public void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Tenant tenant = getTenant(req);
         if (tenant == null) {
-            buildNotFoundResponse("No tenant specified by the 'X-Killbill-ApiKey'"
-                    + " and 'X-Killbill-ApiSecret' headers", resp);
+            buildNotFoundResponse(
+                    "No tenant specified by the 'X-Killbill-ApiKey'" + " and 'X-Killbill-ApiSecret' headers", resp);
             return;
         }
         String pathInfo = req.getPathInfo();
@@ -424,7 +454,12 @@ public class SimpleTaxServlet extends PluginServlet {
                 resp.sendError(SC_BAD_REQUEST, "Invalid Tax Codes resource in request body");
                 return;
             }
-            boolean saved = taxCodeController.saveTaxCodesOfInvoiceItem(invoiceItemId, taxCodesRsc, tenant);
+            UUID accountId = toUUIDOrNull(matcher.group(RESOURCE_IDENTIFIER_GROUP));
+            if (accountId == null) {
+                buildNotFoundResponse("Resource " + pathInfo + " not found", resp);
+                return;
+            }
+            boolean saved = taxCodeController.saveTaxCodesOfInvoiceItem(invoiceItemId, taxCodesRsc, accountId, tenant);
             if (!saved) {
                 resp.sendError(SC_INTERNAL_SERVER_ERROR, "Could not save Tax Codes resource");
                 return;

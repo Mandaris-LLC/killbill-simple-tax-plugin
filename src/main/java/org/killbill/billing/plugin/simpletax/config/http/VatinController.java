@@ -26,12 +26,12 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.plugin.api.PluginTenantContext;
 import org.killbill.billing.plugin.simpletax.internal.VATIN;
 import org.killbill.billing.tenant.api.Tenant;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.customfield.CustomField;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,13 +48,14 @@ public class VatinController {
     private CustomFieldService customFieldService;
 
     /**
-     * Constructs a new controller for the end points related to VAT
-     * Identification Numbers (VATINs).
+     * Constructs a new controller for the end points related to VAT Identification
+     * Numbers (VATINs).
      *
      * @param customFieldService
-     *            The service to use when accessing custom fields.
+     *                               The service to use when accessing custom
+     *                               fields.
      * @param logService
-     *            The Kill Bill log service to use.
+     *                               The Kill Bill log service to use.
      */
     public VatinController(CustomFieldService customFieldService, OSGIKillbillLogService logService) {
         super();
@@ -67,24 +68,24 @@ public class VatinController {
      * restrictions into account.
      *
      * @param accountId
-     *            Any account on which the VAT Identification Numbers (VATINs)
-     *            should be restricted. Might be {@code null}.
+     *                      Any account on which the VAT Identification Numbers
+     *                      (VATINs) should be restricted. Might be {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
+     *                      The tenant on which to operate.
      * @return A list of {@linkplain VATINRsc account VAT Identification Number
      *         (VATIN) resources}. Never {@code null}.
      */
     // TODO: return a List<VATINRsc>
     public Object listVatins(@Nullable UUID accountId, @Nonnull Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
         List<CustomField> fields;
         if (accountId == null) {
-            fields = customFieldService
-                    .findAllAccountFieldsByFieldNameAndTenant(VATIN_CUSTOM_FIELD_NAME, tenantContext);
+            fields = customFieldService.findAllAccountFieldsByFieldNameAndTenant(VATIN_CUSTOM_FIELD_NAME,
+                    tenantContext);
         } else {
-            CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(
-                    VATIN_CUSTOM_FIELD_NAME, accountId, tenantContext);
+            CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(VATIN_CUSTOM_FIELD_NAME,
+                    accountId, tenantContext);
             if (field == null) {
                 return ImmutableList.of();
             }
@@ -106,19 +107,19 @@ public class VatinController {
      * attached to the given account.
      *
      * @param accountId
-     *            An account the VAT Identification Number of which should be
-     *            returned. Must not be {@code null}.
+     *                      An account the VAT Identification Number of which should
+     *                      be returned. Must not be {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
-     * @return The {@linkplain VATINRsc VAT Identification Number resource} of
-     *         the given account, or {@code null} if none exists.
+     *                      The tenant on which to operate.
+     * @return The {@linkplain VATINRsc VAT Identification Number resource} of the
+     *         given account, or {@code null} if none exists.
      */
     // TODO: return a VATINRsc
     public Object getAccountVatin(@Nonnull UUID accountId, @Nonnull Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
-        CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(VATIN_CUSTOM_FIELD_NAME,
-                accountId, tenantContext);
+        CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(VATIN_CUSTOM_FIELD_NAME, accountId,
+                tenantContext);
         if (field == null) {
             return null;
         }
@@ -129,20 +130,20 @@ public class VatinController {
      * Persists a new VAT Identification Number value for a given account.
      *
      * @param accountId
-     *            An account the VAT Identification Number of which should be
-     *            modified. Must not be {@code null}.
+     *                      An account the VAT Identification Number of which should
+     *                      be modified. Must not be {@code null}.
      * @param vatinRsc
-     *            A new VAT Identification Number resource to persist. Must not
-     *            be {@code null}.
+     *                      A new VAT Identification Number resource to persist.
+     *                      Must not be {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
-     * @return {@code true} if the VAT Identification Number is properly saved,
-     *         or {@code false} otherwise.
+     *                      The tenant on which to operate.
+     * @return {@code true} if the VAT Identification Number is properly saved, or
+     *         {@code false} otherwise.
      * @throws NullPointerException
-     *             When {@code vatinRsc} is {@code null}.
+     *                                  When {@code vatinRsc} is {@code null}.
      */
     public boolean saveAccountVatin(@Nonnull UUID accountId, @Nonnull VATINRsc vatinRsc, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
         String newValue = vatinRsc.vatin.getNumber();
         return customFieldService.saveAccountField(newValue, VATIN_CUSTOM_FIELD_NAME, accountId, tenantContext);
     }
@@ -166,8 +167,7 @@ public class VatinController {
      */
     public static final class VATINRsc {
         /**
-         * The identifier of the account this VAT Identification Number belongs
-         * to.
+         * The identifier of the account this VAT Identification Number belongs to.
          */
         // TODO: have immutable resources. Convert to final field?
         public UUID accountId;
@@ -179,9 +179,9 @@ public class VatinController {
          * Constructs a new VAT Identification Number resource.
          *
          * @param accountId
-         *            An account identifier.
+         *                      An account identifier.
          * @param vatin
-         *            A VAT Identification Number.
+         *                      A VAT Identification Number.
          */
         @JsonCreator
         public VATINRsc(@JsonProperty("accountId") UUID accountId, @JsonProperty("vatin") VATIN vatin) {

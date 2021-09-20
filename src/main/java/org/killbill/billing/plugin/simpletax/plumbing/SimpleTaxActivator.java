@@ -24,6 +24,8 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.billing.plugin.api.notification.PluginConfigurationEventHandler;
 import org.killbill.billing.plugin.simpletax.SimpleTaxPlugin;
 import org.killbill.billing.plugin.simpletax.config.SimpleTaxConfig;
@@ -35,9 +37,6 @@ import org.killbill.billing.plugin.simpletax.config.http.TaxCountryController;
 import org.killbill.billing.plugin.simpletax.config.http.VatinController;
 import org.killbill.clock.Clock;
 import org.killbill.clock.DefaultClock;
-import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
-import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -55,12 +54,12 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
     /**
      * This method is the first to be called.
      * <p>
-     * It creates a configuration manager, creates the plugin, and then
-     * registers it into the system.
+     * It creates a configuration manager, creates the plugin, and then registers it
+     * into the system.
      * <p>
      * {@inheritDoc}
      *
-     * @see org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase#start(org.osgi.framework.BundleContext)
+     * @see org.killbill.billing.osgi.libs.killbill#start(org.osgi.framework.BundleContext)
      */
     @Override
     public void start(BundleContext context) throws Exception {
@@ -73,38 +72,25 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
 
         final SimpleTaxPlugin plugin = createPlugin(customFieldService);
         register(InvoicePluginApi.class, plugin, context);
-        dispatcher.registerEventHandler(plugin);
+        configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI, logService);
+        final PluginConfigurationEventHandler eventHandler = new PluginConfigurationEventHandler(configHandler);
 
+        dispatcher.registerEventHandlers(plugin, eventHandler);
         InvoiceService invoiceService = createInvoiceService();
         HttpServlet servlet = createServlet(customFieldService, invoiceService);
         register(Servlet.class, servlet, context);
     }
 
     /**
-     * This method is called by {@link KillbillActivatorBase#start}.
+     * Creates the {@linkplain #configHandler configuration manager} (called “config
+     * handler”) and setup the default plugin configuration.
      * <p>
-     * It creates the configuration “handler” that will <em>manage</em> all the
-     * plugin configuration lifecycle (create, reconfigure, destroy), supporting
-     * the per-tenant nature of these configurations, with appropriate defaults.
-     *
-     * @see org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase#getOSGIKillbillEventHandler()
-     */
-    @Override
-    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI, logService);
-        return new PluginConfigurationEventHandler(configHandler);
-    }
-
-    /**
-     * Creates the {@linkplain #configHandler configuration manager} (called
-     * “config handler”) and setup the default plugin configuration.
+     * At plugin startup time, the default configuration is based on what might have
+     * been configured with Java system properties.
      * <p>
-     * At plugin startup time, the default configuration is based on what might
-     * have been configured with Java system properties.
-     * <p>
-     * Later on, the plugin will access any per-tenant configuration that might
-     * have been uploaded into the database, with the use of the created
-     * configuration manager (a.k.a. “config handler”).
+     * Later on, the plugin will access any per-tenant configuration that might have
+     * been uploaded into the database, with the use of the created configuration
+     * manager (a.k.a. “config handler”).
      */
     private void createDefaultConfig() {
         SimpleTaxConfig defaultConfig = configHandler.createConfigurable(getConfigService().getProperties());

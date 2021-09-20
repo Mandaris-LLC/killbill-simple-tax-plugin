@@ -26,12 +26,12 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.plugin.api.PluginTenantContext;
 import org.killbill.billing.plugin.simpletax.internal.Country;
 import org.killbill.billing.tenant.api.Tenant;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.customfield.CustomField;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -50,9 +50,10 @@ public class TaxCountryController {
      * Constructs a new controller for tax country end points.
      *
      * @param customFieldService
-     *            The service to use when accessing custom fields.
+     *                               The service to use when accessing custom
+     *                               fields.
      * @param logService
-     *            The Kill Bill log service to use.
+     *                               The Kill Bill log service to use.
      */
     public TaxCountryController(CustomFieldService customFieldService, OSGIKillbillLogService logService) {
         super();
@@ -61,28 +62,27 @@ public class TaxCountryController {
     }
 
     /**
-     * Lists JSON resources for tax countries taking any restrictions into
-     * account.
+     * Lists JSON resources for tax countries taking any restrictions into account.
      *
      * @param accountId
-     *            Any account on which the tax countries should be restricted.
-     *            Might be {@code null}.
+     *                      Any account on which the tax countries should be
+     *                      restricted. Might be {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
-     * @return A list of {@linkplain TaxCountryRsc account tax countries
-     *         resources}. Never {@code null}.
+     *                      The tenant on which to operate.
+     * @return A list of {@linkplain TaxCountryRsc account tax countries resources}.
+     *         Never {@code null}.
      */
     // TODO: return a List<TaxCountryRsc>
     public Object listTaxCountries(@Nullable UUID accountId, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
         List<CustomField> fields;
         if (accountId == null) {
             fields = customFieldService.findAllAccountFieldsByFieldNameAndTenant(TAX_COUNTRY_CUSTOM_FIELD_NAME,
                     tenantContext);
         } else {
-            CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(
-                    TAX_COUNTRY_CUSTOM_FIELD_NAME, accountId, tenantContext);
+            CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(TAX_COUNTRY_CUSTOM_FIELD_NAME,
+                    accountId, tenantContext);
             if (field == null) {
                 return ImmutableList.of();
             }
@@ -104,19 +104,19 @@ public class TaxCountryController {
      * given account.
      *
      * @param accountId
-     *            An account the tax country of which should be returned. Must
-     *            not be {@code null}.
+     *                      An account the tax country of which should be returned.
+     *                      Must not be {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
+     *                      The tenant on which to operate.
      * @return The {@linkplain TaxCountryRsc tax country resource} of the given
      *         account, or {@code null} if none exists.
      */
     // TODO: return a TaxCountryRsc
     public Object getAccountTaxCountry(@Nonnull UUID accountId, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
 
-        CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(
-                TAX_COUNTRY_CUSTOM_FIELD_NAME, accountId, tenantContext);
+        CustomField field = customFieldService.findFieldByNameAndAccountAndTenant(TAX_COUNTRY_CUSTOM_FIELD_NAME,
+                accountId, tenantContext);
         if (field == null) {
             return null;
         }
@@ -127,20 +127,20 @@ public class TaxCountryController {
      * Persists a new tax country value for a given account.
      *
      * @param accountId
-     *            An account the tax country of which should be modified. Must
-     *            not be {@code null}.
+     *                          An account the tax country of which should be
+     *                          modified. Must not be {@code null}.
      * @param taxCountryRsc
-     *            A new tax country resource to persist. Must not be
-     *            {@code null}.
+     *                          A new tax country resource to persist. Must not be
+     *                          {@code null}.
      * @param tenant
-     *            The tenant on which to operate.
-     * @return {@code true} if the tax country is properly saved, or
-     *         {@code false} otherwise.
+     *                          The tenant on which to operate.
+     * @return {@code true} if the tax country is properly saved, or {@code false}
+     *         otherwise.
      * @throws NullPointerException
-     *             When {@code vatinRsc} is {@code null}.
+     *                                  When {@code vatinRsc} is {@code null}.
      */
     public boolean saveAccountTaxCountry(@Nonnull UUID accountId, @Nonnull TaxCountryRsc taxCountryRsc, Tenant tenant) {
-        TenantContext tenantContext = new PluginTenantContext(tenant.getId());
+        TenantContext tenantContext = new PluginTenantContext(accountId, tenant.getId());
         String newValue = taxCountryRsc.taxCountry.getCode();
         return customFieldService.saveAccountField(newValue, TAX_COUNTRY_CUSTOM_FIELD_NAME, accountId, tenantContext);
     }
@@ -175,12 +175,13 @@ public class TaxCountryController {
          * Constructs a new tax country resource.
          *
          * @param accountId
-         *            An account identifier.
+         *                       An account identifier.
          * @param taxCountry
-         *            A tax country.
+         *                       A tax country.
          */
         @JsonCreator
-        public TaxCountryRsc(@JsonProperty("accountId") UUID accountId, @JsonProperty("taxCountry") Country taxCountry) {
+        public TaxCountryRsc(@JsonProperty("accountId") UUID accountId,
+                @JsonProperty("taxCountry") Country taxCountry) {
             // TODO: have more reliable resources. Add
             // Precondition.checkNonNull()
             this.accountId = accountId;
