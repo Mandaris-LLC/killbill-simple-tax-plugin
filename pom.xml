@@ -202,7 +202,6 @@
                             org.killbill.billing.currency.plugin.api;
                             org.killbill.billing.currency.api;
                             org.killbill.billing.security.api;
-                            org.killbill.billing.routing.plugin.api;
                             javax.annotation;
                             javax.activation;
                             javax.naming.directory;
