@@ -203,6 +203,7 @@
                             org.killbill.billing.currency.api;
                             org.killbill.billing.security.api;
                             org.osgi.framework;
+                            org.joda.time;
                             javax.annotation;
                             javax.activation;
                             javax.naming.directory;
