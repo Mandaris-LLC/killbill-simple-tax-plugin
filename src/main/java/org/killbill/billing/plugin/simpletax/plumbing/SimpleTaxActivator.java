@@ -24,6 +24,7 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.billing.plugin.api.notification.PluginConfigurationEventHandler;
@@ -71,10 +72,14 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         CustomFieldService customFieldService = createCustomFieldService();
 
         final SimpleTaxPlugin plugin = createPlugin(customFieldService);
-        register(InvoicePluginApi.class, plugin, context);
+        final Hashtable<String, String> props = new Hashtable<String, String>();
+        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
+        registrar.registerService(context, InvoicePluginApi.class, plugin, props);
+
         InvoiceService invoiceService = createInvoiceService();
         HttpServlet servlet = createServlet(customFieldService, invoiceService);
-        register(HttpServlet.class, servlet, context);
+
+        registrar.registerService(context, Servlet.class, servlet, props);
 
         final PluginConfigurationEventHandler eventHandler = new PluginConfigurationEventHandler(configHandler);
 
