@@ -83,7 +83,8 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
 
         InvoiceService invoiceService = createInvoiceService();
         HttpServlet servlet = createServlet(customFieldService, invoiceService);
-        createServlet(customFieldService, invoiceService);
+
+        registrar.registerService(context, Servlet.class, servlet, props);
     }
 
     /**
