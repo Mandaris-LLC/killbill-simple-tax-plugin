@@ -16,7 +16,16 @@
  */
 package org.killbill.billing.plugin.simpletax.plumbing;
 
+import javax.servlet.http.HttpServlet;
+
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.plugin.simpletax.config.http.CustomFieldService;
+import org.killbill.billing.plugin.simpletax.config.http.InvoiceService;
+import org.killbill.billing.plugin.simpletax.config.http.SimpleTaxServlet;
+import org.killbill.billing.plugin.simpletax.config.http.TaxCodeController;
+import org.killbill.billing.plugin.simpletax.config.http.TaxCountryController;
+import org.killbill.billing.plugin.simpletax.config.http.VatinController;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +39,8 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
 
     /** The name for this plugin. */
     public static final String PLUGIN_NAME = "killbill-simple-tax";
+
+    private SimpleTaxConfigurationHandler configHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(SimpleTaxActivator.class);
 
@@ -49,5 +60,21 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // createDefaultConfig() below
         super.start(context);
         logger.info("SimpleTaxActivator starting");
+    }
+
+    private HttpServlet createServlet(CustomFieldService customFieldService, InvoiceService invoiceService) {
+        TaxCountryController taxCountryController = new TaxCountryController(customFieldService);
+        VatinController vatinController = new VatinController(customFieldService);
+        TaxCodeController taxCodeController = new TaxCodeController(customFieldService, invoiceService);
+        return new SimpleTaxServlet(vatinController, taxCountryController, taxCodeController);
+    }
+
+    /**
+     * Convenience method used in order to improve the code readability.
+     *
+     * @return the configuration service
+     */
+    private OSGIConfigPropertiesService getConfigService() {
+        return configProperties;
     }
 }
