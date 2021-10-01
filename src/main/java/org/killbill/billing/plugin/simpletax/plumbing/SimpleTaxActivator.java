@@ -16,11 +16,20 @@
  */
 package org.killbill.billing.plugin.simpletax.plumbing;
 
+import static org.killbill.billing.osgi.api.OSGIPluginProperties.PLUGIN_NAME_PROP;
+
+import java.util.Hashtable;
+
+import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
+import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.plugin.api.notification.PluginConfigurationEventHandler;
 import org.killbill.billing.plugin.simpletax.SimpleTaxPlugin;
+import org.killbill.billing.plugin.simpletax.config.SimpleTaxConfig;
 import org.killbill.billing.plugin.simpletax.config.http.CustomFieldService;
 import org.killbill.billing.plugin.simpletax.config.http.InvoiceService;
 import org.killbill.billing.plugin.simpletax.config.http.SimpleTaxServlet;
@@ -62,7 +71,27 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // Note: super.start() creates the configHandler that we later use in
         // createDefaultConfig() below
         super.start(context);
-        logger.info("SimpleTaxActivator starting");
+        logger.info("SimpleTaxActivator starting 4");
+    }
+
+    /**
+     * Creates the {@linkplain #configHandler configuration manager} (called “config
+     * handler”) and setup the default plugin configuration.
+     * <p>
+     * At plugin startup time, the default configuration is based on what might have
+     * been configured with Java system properties.
+     * <p>
+     * Later on, the plugin will access any per-tenant configuration that might have
+     * been uploaded into the database, with the use of the created configuration
+     * manager (a.k.a. “config handler”).
+     */
+    private void createDefaultConfig() {
+        SimpleTaxConfig defaultConfig = configHandler.createConfigurable(getConfigService().getProperties());
+        configHandler.setDefaultConfigurable(defaultConfig);
+    }
+
+    private CustomFieldService createCustomFieldService() {
+        return new CustomFieldService(killbillAPI.getCustomFieldUserApi());
     }
 
     private InvoiceService createInvoiceService() {
