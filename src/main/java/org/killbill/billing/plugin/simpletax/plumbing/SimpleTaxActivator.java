@@ -71,7 +71,11 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // Note: super.start() creates the configHandler that we later use in
         // createDefaultConfig() below
         super.start(context);
-        logger.info("SimpleTaxActivator starting 4");
+        logger.info("SimpleTaxActivator");
+        configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI);
+        createDefaultConfig();
+        CustomFieldService customFieldService = createCustomFieldService();
+
     }
 
     /**
