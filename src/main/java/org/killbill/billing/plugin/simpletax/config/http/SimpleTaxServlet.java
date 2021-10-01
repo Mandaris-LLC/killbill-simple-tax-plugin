@@ -186,7 +186,7 @@ public class SimpleTaxServlet extends PluginServlet {
             return;
         }
         String pathInfo = req.getPathInfo();
-        log(pathInfo);
+        logger.info(pathInfo);
         Matcher matcher = ACCOUNT_PATTERN.matcher(pathInfo);
         if (matcher.matches()) {
             UUID accountId = toUUIDOrNull(matcher.group(RESOURCE_IDENTIFIER_GROUP));
