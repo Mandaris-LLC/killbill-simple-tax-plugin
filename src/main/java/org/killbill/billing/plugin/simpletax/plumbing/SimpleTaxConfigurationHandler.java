@@ -20,9 +20,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
-import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.plugin.api.notification.PluginTenantConfigurableConfigurationHandler;
 import org.killbill.billing.plugin.simpletax.config.SimpleTaxConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
@@ -33,7 +34,7 @@ import com.google.common.collect.Maps;
  */
 public class SimpleTaxConfigurationHandler extends PluginTenantConfigurableConfigurationHandler<SimpleTaxConfig> {
 
-    private OSGIKillbillLogService logService;
+    private static final Logger logger = LoggerFactory.getLogger(SimpleTaxConfigurationHandler.class);
 
     /**
      * Constructs a new configuration handler.
@@ -43,18 +44,14 @@ public class SimpleTaxConfigurationHandler extends PluginTenantConfigurableConfi
      *                       configuration.
      * @param services
      *                       The Kill Bill meta-API.
-     * @param logService
-     *                       The service to use when logging events.
      */
-    public SimpleTaxConfigurationHandler(String pluginName, OSGIKillbillAPI services,
-            OSGIKillbillLogService logService) {
+    public SimpleTaxConfigurationHandler(String pluginName, OSGIKillbillAPI services) {
         super(pluginName, services);
-        this.logService = logService;
     }
 
     @Override
     protected SimpleTaxConfig createConfigurable(Properties pluginConfig) {
         Map<String, String> props = Maps.fromProperties(pluginConfig);
-        return new SimpleTaxConfig(props, logService);
+        return new SimpleTaxConfig(props);
     }
 }

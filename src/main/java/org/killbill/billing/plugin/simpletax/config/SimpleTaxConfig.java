@@ -30,8 +30,6 @@ import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.res
 import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.splitTaxCodes;
 import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.string;
 import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.timeZone;
-import static org.osgi.service.log.LogService.LOG_ERROR;
-import static org.osgi.service.log.LogService.LOG_WARNING;
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -44,12 +42,13 @@ import javax.annotation.Nullable;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
-import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.plugin.simpletax.TaxComputationContext;
 import org.killbill.billing.plugin.simpletax.internal.Country;
 import org.killbill.billing.plugin.simpletax.internal.TaxCode;
 import org.killbill.billing.plugin.simpletax.resolving.NullTaxResolver;
 import org.killbill.billing.plugin.simpletax.resolving.TaxResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -159,7 +158,7 @@ public class SimpleTaxConfig {
     }
 
     private Map<String, String> cfg;
-    private OSGIKillbillLogService logService;
+    private static final Logger logger = LoggerFactory.getLogger(SimpleTaxConfig.class);
 
     private Map<String, TaxCode> taxCodesByName;
 
@@ -172,19 +171,15 @@ public class SimpleTaxConfig {
      * properties.
      *
      * @param cfg
-     *                       The configuration properties to use. No {@code null}
-     *                       values are allowed, which should be the case when this
-     *                       Map is constructed out of a
-     *                       {@link java.util.Properties} instance.
-     * @param logService
-     *                       The logging service to use.
+     *                The configuration properties to use. No {@code null} values
+     *                are allowed, which should be the case when this Map is
+     *                constructed out of a {@link java.util.Properties} instance.
      * @throws NullPointerException
      *                                  when any value in {@code cfg} is
      *                                  {@code null}.
      */
-    public SimpleTaxConfig(Map<String, String> cfg, OSGIKillbillLogService logService) {
+    public SimpleTaxConfig(Map<String, String> cfg) {
         this.cfg = cfg;
-        this.logService = logService;
 
         parseConfig();
         earlyConsistencyChecks();
@@ -208,30 +203,29 @@ public class SimpleTaxConfig {
     private void earlyConsistencyChecks() {
         String resolverClassName = cfg.get(TAX_RESOLVER_PROPERTY);
         if (isBlank(resolverClassName)) {
-            logService.log(LOG_WARNING, "Blank property [" + TAX_RESOLVER_PROPERTY
-                    + "], whereas it should not be blank." + DEFAULT_TAXATION_MSG);
+            logger.warn("Blank property [" + TAX_RESOLVER_PROPERTY + "], whereas it should not be blank."
+                    + DEFAULT_TAXATION_MSG);
         } else {
             Class<?> clazz = null;
             try {
                 clazz = currentThread().getContextClassLoader().loadClass(resolverClassName);
             } catch (ClassNotFoundException exc) {
-                logService.log(LOG_ERROR, "Cannot load class [" + resolverClassName + "] as specified by the ["
+                logger.error("Cannot load class [" + resolverClassName + "] as specified by the ["
                         + TAX_RESOLVER_PROPERTY + "] configuration property." + DEFAULT_TAXATION_MSG);
             }
             if (clazz != null) {
                 String invalidClassMsgPfx = "Invalid class [" + resolverClassName + "] specified by the ["
                         + TAX_RESOLVER_PROPERTY + "] configuration property,";
                 if (!TaxResolver.class.isAssignableFrom(clazz)) {
-                    logService.log(LOG_ERROR, invalidClassMsgPfx + " which must designate a sub-class of ["
+                    logger.error(invalidClassMsgPfx + " which must designate a sub-class of ["
                             + TaxResolver.class.getName() + "]." + DEFAULT_TAXATION_MSG);
                 }
                 try {
                     clazz.getConstructor(TaxComputationContext.class);
                 } catch (NoSuchMethodException exc) {
-                    logService.log(LOG_ERROR,
-                            invalidClassMsgPfx
-                                    + " which must define a public constructor accepting a single argument of ["
-                                    + TaxComputationContext.class.getName() + "]." + DEFAULT_TAXATION_MSG);
+                    logger.error(invalidClassMsgPfx
+                            + " which must define a public constructor accepting a single argument of ["
+                            + TaxComputationContext.class.getName() + "]." + DEFAULT_TAXATION_MSG);
                 }
             }
         }
@@ -246,10 +240,9 @@ public class SimpleTaxConfig {
             // requirement we detail in the constructor javadoc.
             for (String taxCode : splitTaxCodes(taxCodes)) {
                 if (findTaxCode(taxCode) == null) {
-                    logService.log(LOG_ERROR,
-                            "Inconsistent config property [" + propName + "] with value [" + taxCodes
-                                    + "], because the tax code [" + taxCode + "] is not defined anywhere."
-                                    + " Config spelling error? You should fix this!");
+                    logger.error("Inconsistent config property [" + propName + "] with value [" + taxCodes
+                            + "], because the tax code [" + taxCode + "] is not defined anywhere."
+                            + " Config spelling error? You should fix this!");
                 }
             }
         }
@@ -405,7 +398,7 @@ public class SimpleTaxConfig {
         for (String name : splitTaxCodes(names)) {
             TaxCode taxCode = findTaxCode(name);
             if (taxCode == null) {
-                logService.log(LOG_ERROR, String.format(errMsgFmt, name));
+                logger.error(String.format(errMsgFmt, name));
                 continue;
             }
             taxCodes.add(taxCode);

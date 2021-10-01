@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.TAX_CODES_JOIN_SEPARATOR;
 import static org.killbill.billing.plugin.simpletax.config.ConvertionHelpers.splitTaxCodes;
 import static org.killbill.billing.plugin.simpletax.internal.TaxCodeService.TAX_CODES_FIELD_NAME;
-import static org.osgi.service.log.LogService.LOG_DEBUG;
 
 import java.util.List;
 import java.util.Set;
@@ -35,7 +34,8 @@ import org.killbill.billing.plugin.simpletax.internal.TaxCodeService;
 import org.killbill.billing.tenant.api.Tenant;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.customfield.CustomField;
-import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -45,9 +45,9 @@ import com.google.common.collect.ImmutableSet;
  * @author Benjamin Gandon
  */
 public class TaxCodeController {
-    private OSGIKillbillLogService logService;
     private CustomFieldService customFieldService;
     private InvoiceService invoiceService;
+    private static final Logger logger = LoggerFactory.getLogger(TaxCodeController.class);
 
     /**
      * @param customFieldService
@@ -55,13 +55,9 @@ public class TaxCodeController {
      *                               fields.
      * @param invoiceService
      *                               The service to use when accessing invoices.
-     * @param logService
-     *                               The Kill Bill log service to use.
      */
-    public TaxCodeController(CustomFieldService customFieldService, InvoiceService invoiceService,
-            OSGIKillbillLogService logService) {
+    public TaxCodeController(CustomFieldService customFieldService, InvoiceService invoiceService) {
         super();
-        this.logService = logService;
         this.customFieldService = customFieldService;
         this.invoiceService = invoiceService;
     }
@@ -104,7 +100,7 @@ public class TaxCodeController {
 
         Invoice invoice = invoiceService.findInvoiceByInvoiceItem(invoiceItemId, tenantContext);
         if (invoice == null) {
-            logService.log(LOG_DEBUG,
+            logger.debug(
                     "No invoice found for invoice item [" + invoiceItemId + "] in tenant [" + tenant.getApiKey() + "]");
             return null;
         }
