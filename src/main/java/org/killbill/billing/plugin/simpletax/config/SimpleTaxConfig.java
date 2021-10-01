@@ -180,9 +180,13 @@ public class SimpleTaxConfig {
      */
     public SimpleTaxConfig(Map<String, String> cfg) {
         this.cfg = cfg;
+        try {
+            parseConfig();
+            earlyConsistencyChecks();
+        } catch (Exception e) {
+            logger.error("SimpleTaxConfig", e);
+        }
 
-        parseConfig();
-        earlyConsistencyChecks();
     }
 
     private void parseConfig() {
