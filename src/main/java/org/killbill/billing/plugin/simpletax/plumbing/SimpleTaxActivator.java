@@ -71,10 +71,18 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // Note: super.start() creates the configHandler that we later use in
         // createDefaultConfig() below
         super.start(context);
-        logger.info("SimpleTaxActivator");
+        logger.info("SimpleTaxActivator 7");
         configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI);
         createDefaultConfig();
         CustomFieldService customFieldService = createCustomFieldService();
+
+        final SimpleTaxPlugin plugin = createPlugin(customFieldService);
+        final Hashtable<String, String> props = new Hashtable<String, String>();
+        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
+        registrar.registerService(context, InvoicePluginApi.class, plugin, props);
+
+        InvoiceService invoiceService = createInvoiceService();
+        HttpServlet servlet = createServlet(customFieldService, invoiceService);
 
     }
 
