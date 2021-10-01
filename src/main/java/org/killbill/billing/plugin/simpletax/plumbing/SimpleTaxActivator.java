@@ -20,12 +20,15 @@ import javax.servlet.http.HttpServlet;
 
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.plugin.simpletax.SimpleTaxPlugin;
 import org.killbill.billing.plugin.simpletax.config.http.CustomFieldService;
 import org.killbill.billing.plugin.simpletax.config.http.InvoiceService;
 import org.killbill.billing.plugin.simpletax.config.http.SimpleTaxServlet;
 import org.killbill.billing.plugin.simpletax.config.http.TaxCodeController;
 import org.killbill.billing.plugin.simpletax.config.http.TaxCountryController;
 import org.killbill.billing.plugin.simpletax.config.http.VatinController;
+import org.killbill.clock.Clock;
+import org.killbill.clock.DefaultClock;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +63,15 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // createDefaultConfig() below
         super.start(context);
         logger.info("SimpleTaxActivator starting");
+    }
+
+    private InvoiceService createInvoiceService() {
+        return new InvoiceService(killbillAPI.getInvoiceUserApi());
+    }
+
+    private SimpleTaxPlugin createPlugin(CustomFieldService customFieldService) {
+        Clock clock = new DefaultClock();
+        return new SimpleTaxPlugin(configHandler, customFieldService, killbillAPI, getConfigService(), clock);
     }
 
     private HttpServlet createServlet(CustomFieldService customFieldService, InvoiceService invoiceService) {
