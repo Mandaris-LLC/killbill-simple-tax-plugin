@@ -218,6 +218,9 @@ public class SimpleTaxPlugin extends PluginInvoicePluginApi implements OSGIKillb
 
     @Override
     public void handleKillbillEvent(ExtBusEvent event) {
+        logger.debug("Received event [" + event.getEventType() + "] for object [" + event.getObjectId() + "] of type ["
+                + event.getObjectType() + "] belonging to account [" + event.getAccountId() + "] in tenant ["
+                + event.getTenantId() + "]");
 
         if (!INVOICE_CREATION.equals(event.getEventType())) {
             return;
@@ -228,6 +231,8 @@ public class SimpleTaxPlugin extends PluginInvoicePluginApi implements OSGIKillb
         UUID invoiceId = event.getObjectId();
         UUID tenantId = event.getTenantId();
         UUID accountId = event.getAccountId();
+        logger.info("Adding tax codes to invoice [" + invoiceId + "] as post-creation treatment for tenant [" + tenantId
+                + "]");
 
         Invoice newInvoice;
         try {
