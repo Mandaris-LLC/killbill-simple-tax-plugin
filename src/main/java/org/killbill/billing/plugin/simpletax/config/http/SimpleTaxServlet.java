@@ -148,6 +148,7 @@ public class SimpleTaxServlet extends PluginServlet {
         this.taxCountryController = taxCountryController;
         this.vatinController = vatinController;
         this.taxCodeController = taxCodeController;
+        log("SimpleTaxServlet Init");
     }
 
     /**
