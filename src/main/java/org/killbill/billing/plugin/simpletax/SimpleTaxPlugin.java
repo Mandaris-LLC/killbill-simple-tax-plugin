@@ -218,7 +218,8 @@ public class SimpleTaxPlugin extends PluginInvoicePluginApi implements OSGIKillb
 
     @Override
     public void handleKillbillEvent(ExtBusEvent event) {
-        logger.debug("Received event [" + event.getEventType() + "] for object [" + event.getObjectId() + "] of type ["
+        logger.info("handleKillbillEvent");
+        logger.info("Received event [" + event.getEventType() + "] for object [" + event.getObjectId() + "] of type ["
                 + event.getObjectType() + "] belonging to account [" + event.getAccountId() + "] in tenant ["
                 + event.getTenantId() + "]");
 
