@@ -39,6 +39,8 @@ import org.killbill.billing.plugin.simpletax.config.http.VatinController;
 import org.killbill.clock.Clock;
 import org.killbill.clock.DefaultClock;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Activator class for the Simple Tax Plugin.
@@ -51,6 +53,8 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
     public static final String PLUGIN_NAME = "killbill-simple-tax";
 
     private SimpleTaxConfigurationHandler configHandler;
+
+    private static final Logger logger = LoggerFactory.getLogger(SimpleTaxActivator.class);
 
     /**
      * This method is the first to be called.
@@ -67,6 +71,7 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         // Note: super.start() creates the configHandler that we later use in
         // createDefaultConfig() below
         super.start(context);
+        logger.info("SimpleTaxActivator starting");
         configHandler = new SimpleTaxConfigurationHandler(PLUGIN_NAME, killbillAPI);
         createDefaultConfig();
         CustomFieldService customFieldService = createCustomFieldService();
