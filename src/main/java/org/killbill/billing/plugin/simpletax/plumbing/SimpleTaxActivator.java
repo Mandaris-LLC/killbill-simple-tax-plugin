@@ -82,7 +82,7 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         registrar.registerService(context, InvoicePluginApi.class, plugin, props);
 
         InvoiceService invoiceService = createInvoiceService();
-        // HttpServlet servlet = createServlet(customFieldService, invoiceService);
+        createServlet(customFieldService, invoiceService);
 
     }
 
@@ -119,7 +119,8 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         TaxCountryController taxCountryController = new TaxCountryController(customFieldService);
         VatinController vatinController = new VatinController(customFieldService);
         TaxCodeController taxCodeController = new TaxCodeController(customFieldService, invoiceService);
-        return new SimpleTaxServlet(vatinController, taxCountryController, taxCodeController);
+        // return new SimpleTaxServlet(vatinController, taxCountryController,
+        // taxCodeController);
     }
 
     /**
