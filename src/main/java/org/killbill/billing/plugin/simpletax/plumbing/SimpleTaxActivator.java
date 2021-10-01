@@ -122,12 +122,6 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         return new SimpleTaxServlet(vatinController, taxCountryController, taxCodeController);
     }
 
-    private <S> void register(Class<S> serviceClass, S serviceInstance, BundleContext context) {
-        Hashtable<String, String> props = new Hashtable<String, String>();
-        props.put(PLUGIN_NAME_PROP, PLUGIN_NAME);
-        registrar.registerService(context, serviceClass, serviceInstance, props);
-    }
-
     /**
      * Convenience method used in order to improve the code readability.
      *

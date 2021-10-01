@@ -51,6 +51,7 @@ public class SimpleTaxConfigurationHandler extends PluginTenantConfigurableConfi
 
     @Override
     protected SimpleTaxConfig createConfigurable(Properties pluginConfig) {
+        logger.info("createConfigurable");
         Map<String, String> props = Maps.fromProperties(pluginConfig);
         return new SimpleTaxConfig(props);
     }
