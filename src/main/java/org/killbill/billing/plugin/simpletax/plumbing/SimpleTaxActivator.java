@@ -83,7 +83,7 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
 
         final PluginConfigurationEventHandler eventHandler = new PluginConfigurationEventHandler(configHandler);
 
-        // dispatcher.registerEventHandlers(eventHandler);
+        dispatcher.registerEventHandlers(eventHandler);
     }
 
     /**
