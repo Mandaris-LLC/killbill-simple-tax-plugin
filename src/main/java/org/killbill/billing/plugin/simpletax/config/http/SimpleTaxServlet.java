@@ -39,6 +39,8 @@ import org.killbill.billing.plugin.simpletax.config.http.TaxCodeController.TaxCo
 import org.killbill.billing.plugin.simpletax.config.http.TaxCountryController.TaxCountryRsc;
 import org.killbill.billing.plugin.simpletax.config.http.VatinController.VATINRsc;
 import org.killbill.billing.tenant.api.Tenant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,6 +87,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Benjamin Gandon
  */
 public class SimpleTaxServlet extends PluginServlet {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleTaxServlet.class);
+
     private static final long serialVersionUID = 1L;
 
     private static final String PLUGIN_BASE_PATH = "/plugins/" + PLUGIN_NAME;
@@ -148,7 +152,7 @@ public class SimpleTaxServlet extends PluginServlet {
         this.taxCountryController = taxCountryController;
         this.vatinController = vatinController;
         this.taxCodeController = taxCodeController;
-        log("SimpleTaxServlet Init");
+        logger.info("SimpleTaxServlet Init");
     }
 
     /**

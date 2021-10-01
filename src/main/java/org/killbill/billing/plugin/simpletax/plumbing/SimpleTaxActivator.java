@@ -115,12 +115,11 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         return new SimpleTaxPlugin(configHandler, customFieldService, killbillAPI, getConfigService(), clock);
     }
 
-    private void createServlet(CustomFieldService customFieldService, InvoiceService invoiceService) {
+    private HttpServlet createServlet(CustomFieldService customFieldService, InvoiceService invoiceService) {
         TaxCountryController taxCountryController = new TaxCountryController(customFieldService);
         VatinController vatinController = new VatinController(customFieldService);
         TaxCodeController taxCodeController = new TaxCodeController(customFieldService, invoiceService);
-        // return new SimpleTaxServlet(vatinController, taxCountryController,
-        // taxCodeController);
+        return new SimpleTaxServlet(vatinController, taxCountryController, taxCodeController);
     }
 
     /**
