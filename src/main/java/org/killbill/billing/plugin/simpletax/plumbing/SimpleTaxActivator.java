@@ -80,10 +80,6 @@ public class SimpleTaxActivator extends KillbillActivatorBase {
         final Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
         registrar.registerService(context, InvoicePluginApi.class, plugin, props);
-
-        InvoiceService invoiceService = createInvoiceService();
-        HttpServlet servlet = createServlet(customFieldService, invoiceService);
-
     }
 
     /**
